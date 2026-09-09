@@ -148,8 +148,8 @@ export interface UserBadge {
 
 /** Response of POST /users/_token/. */
 export interface UserToken {
-  token: string;
-  username: string;
+  user_token: string;
+  username?: string;
 }
 
 /** A part owned by a user (parts, allparts, lost parts, part list parts). */

@@ -63,6 +63,25 @@ test('attaches a user token later via setUserToken() and reuses the client', asy
   assert.equal(calls[0].url, 'https://rebrickable.com/api/v3/users/tok999/profile/');
 });
 
+test('getUserToken returns user_token and setUserToken wires it into user calls', async () => {
+  const responses = new Map([
+    ['/api/v3/users/_token/', { username: 'bob', user_token: 'tok123' }],
+    ['/api/v3/users/tok123/profile/', { username: 'bob', user_id: 1, avatar_url: null, timezone: 'UTC' }],
+  ]);
+  const fetchApi = async (url, _init) => {
+    const path = new URL(url).pathname;
+    return new Response(JSON.stringify(responses.get(path) ?? {}), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+
+  const client = new RebrickableClient({ apiKey: 'x', fetchApi });
+  const { user_token } = await client.getUserToken('bob', 'secret');
+  assert.equal(user_token, 'tok123');
+
+  client.setUserToken(user_token);
+  const profile = await client.getProfile();
+  assert.equal(profile.username, 'bob');
+});
+
 test('throws on non-2xx responses', async () => {
   const { fetchApi } = mockFetch(404, JSON.stringify({ detail: 'Not found.' }));
   const client = new RebrickableClient({ apiKey: 'x', fetchApi });

@@ -16,8 +16,8 @@ const sets = await client.listSets({ themeId: '158', pageSize: 20 });
 console.log(sets.results[0].name);
 
 // Authenticated user data: get a token, then attach it to the same client.
-const { token } = await client.getUserToken('username', 'password');
-client.setUserToken(token);
+const { user_token } = await client.getUserToken('username', 'password');
+client.setUserToken(user_token);
 const owned = await client.listUserSets();
 ```
 
