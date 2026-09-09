@@ -181,11 +181,11 @@ export class RebrickableClient {
   /** Generated Swagger API (the spec itself). */
   readonly swagger: SwaggerApi;
 
-  private readonly defaultUserToken?: string;
   private readonly raw: RawRequestApi;
+  private userToken?: string;
 
   constructor(config: RebrickableClientConfig) {
-    this.defaultUserToken = config.userToken;
+    this.userToken = config.userToken;
     this.configuration = new Configuration({
       basePath: config.basePath,
       fetchApi: config.fetchApi,
@@ -201,11 +201,23 @@ export class RebrickableClient {
     this.swagger = new SwaggerApi(this.configuration);
   }
 
-  /** Resolve a `user_token`: explicit argument wins, falls back to the client value. */
+  /**
+   * Attach (or replace) the Rebrickable `user_token` on an existing client, so the
+   * `users` methods no longer need an explicit token argument. This is the
+   * convenience route after calling `getUserToken`.
+   */
+  setUserToken(userToken: string): void {
+    this.userToken = userToken;
+  }
+
+  /** Resolve a `user_token`: explicit argument wins, falls back to `setUserToken`/config. */
   private token(userToken?: string): string {
-    const value = userToken ?? this.defaultUserToken;
+    const value = userToken ?? this.userToken;
     if (!value) {
-      throw new Error('A user_token is required. Pass it to the method or set `userToken` in the client config.');
+      throw new Error(
+        'A user_token is required for this method. Set it via client.setUserToken(token) ' +
+        'or the `userToken` config option, or pass it as the method argument.',
+      );
     }
     return value;
   }

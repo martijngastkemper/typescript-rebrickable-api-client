@@ -49,6 +49,20 @@ test('uses custom basePath and falls back to the configured userToken', async ()
   assert.equal(calls[0].url, 'http://localhost:3000/api/v3/users/tok123/profile/');
 });
 
+test('attaches a user token later via setUserToken() and reuses the client', async () => {
+  const { calls, fetchApi } = mockFetch(
+    200,
+    JSON.stringify({ username: 'bob', user_id: 1, avatar_url: null, timezone: 'UTC' }),
+  );
+  const client = new RebrickableClient({ apiKey: 'x', fetchApi });
+
+  client.setUserToken('tok999');
+  const profile = await client.getProfile();
+
+  assert.equal(profile.username, 'bob');
+  assert.equal(calls[0].url, 'https://rebrickable.com/api/v3/users/tok999/profile/');
+});
+
 test('throws on non-2xx responses', async () => {
   const { fetchApi } = mockFetch(404, JSON.stringify({ detail: 'Not found.' }));
   const client = new RebrickableClient({ apiKey: 'x', fetchApi });

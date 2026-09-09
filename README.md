@@ -15,11 +15,15 @@ const client = new RebrickableClient({ apiKey: 'YOUR_API_KEY' });
 const sets = await client.listSets({ themeId: '158', pageSize: 20 });
 console.log(sets.results[0].name);
 
-// Authenticated user data (get a token, then reuse it)
+// Authenticated user data: get a token, then attach it to the same client.
 const { token } = await client.getUserToken('username', 'password');
-const user = new RebrickableClient({ apiKey: 'YOUR_API_KEY', userToken: token });
-const owned = await user.listUserSets();
+client.setUserToken(token);
+const owned = await client.listUserSets();
 ```
+
+The `user_token` can also be provided up front via the `userToken` config option
+(`new RebrickableClient({ apiKey, userToken })`) or per call as the first argument
+(`client.listUserSets('my_token')`).
 
 Every method is typed: request parameters come from the OpenAPI spec, response
 payloads come from the hand-maintained models in [`src/models.ts`](src/models.ts).
