@@ -1,0 +1,25 @@
+{
+  "name": "rebrickable-api-client",
+  "version": "0.1.0",
+  "description": "TypeScript client for the Rebrickable LEGO API v3, generated with openapi-generator from the official OpenAPI spec.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "generate": "bash scripts/generate.sh",
+    "update": "bash scripts/update.sh",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.41.0",
+    "typescript": "~5.9.3"
+  }
+}
