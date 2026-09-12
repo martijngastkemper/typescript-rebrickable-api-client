@@ -25,6 +25,24 @@ The `user_token` can also be provided up front via the `userToken` config option
 (`new RebrickableClient({ apiKey, userToken })`) or per call as the first argument
 (`client.listUserSets('my_token')`).
 
+### Retry Policy
+
+Failed requests (429, 5xx, or network errors) are automatically retried with exponential backoff:
+
+```ts
+const client = new RebrickableClient({
+  apiKey: 'YOUR_API_KEY',
+  retry: {
+    retries: 5,          // Max retries (default: 3)
+    minTimeout: 2000,    // Min delay between retries in ms (default: 1000)
+    maxTimeout: 30000,   // Max delay between retries in ms (default: 10000)
+  },
+});
+```
+
+- **Retryable errors**: 429 (Too Many Requests), 500-599 (Server Errors), and network errors (e.g., `TypeError: Failed to fetch`).
+- **Non-retryable errors**: 4xx (except 429), 3xx, and 2xx.
+
 Every method is typed: request parameters come from the OpenAPI spec, response
 payloads come from the hand-maintained models in [`src/models.ts`](src/models.ts).
 
