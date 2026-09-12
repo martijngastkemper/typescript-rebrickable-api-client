@@ -82,6 +82,33 @@ test('getUserToken returns user_token and setUserToken wires it into user calls'
   assert.equal(profile.username, 'bob');
 });
 
+test('retries failed requests (5xx) and succeeds on retry', async () => {
+  let callCount = 0;
+  const fetchApi = async () => {
+    callCount++;
+    if (callCount === 1) {
+      return new Response('Internal Server Error', { status: 500 });
+    }
+    return new Response(JSON.stringify({ results: [{ id: 1, name: 'Red' }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  };
+
+  const client = new RebrickableClient({ apiKey: 'x', fetchApi });
+  const colors = await client.listColors();
+  assert.equal(colors.results[0].name, 'Red');
+  assert.equal(callCount, 2);
+});
+
+test('does not retry non-retryable errors (404)', async () => {
+  const fetchApi = async () =>
+    new Response('Not Found', { status: 404 });
+
+  const client = new RebrickableClient({ apiKey: 'x', fetchApi });
+  await assert.rejects(client.listColors(), /Response returned an error code/);
+});
+
 test('throws on non-2xx responses', async () => {
   const { fetchApi } = mockFetch(404, JSON.stringify({ detail: 'Not found.' }));
   const client = new RebrickableClient({ apiKey: 'x', fetchApi });

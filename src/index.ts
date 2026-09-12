@@ -1,3 +1,4 @@
+
 import {
   BaseAPI,
   Configuration,
@@ -157,8 +158,20 @@ export interface RebrickableClientConfig {
    * when no explicit token is passed.
    */
   userToken?: string;
-  /** Custom fetch implementation (useful for tests and caching). */
+  /**
+   * Override the `fetch` implementation. Useful for testing or non-browser
+   * environments.
+   */
   fetchApi?: FetchAPI;
+  /**
+   * Retry policy for failed requests (429, 5xx, or network errors).
+   * @default { retries: 3, minTimeout: 1000, maxTimeout: 10000 }
+   */
+  retry?: {
+    retries?: number;
+    minTimeout?: number;
+    maxTimeout?: number;
+  };
   /** Extra headers merged into every request (may override `Authorization`). */
   headers?: HTTPHeaders;
   /** Middleware for request/response hooks (see typescript-fetch `Middleware`). */
@@ -184,7 +197,10 @@ export class RebrickableClient {
   private readonly raw: RawRequestApi;
   private userToken?: string;
 
+  private readonly config: RebrickableClientConfig;
+
   constructor(config: RebrickableClientConfig) {
+    this.config = config;
     this.userToken = config.userToken;
     this.configuration = new Configuration({
       basePath: config.basePath,
@@ -222,9 +238,64 @@ export class RebrickableClient {
     return value;
   }
 
+  /**
+   * Check if a response or error is retryable.
+   * @internal
+   */
+  private isRetryable(error: unknown): boolean {
+    if (error instanceof Error && error.name === 'TypeError') {
+      // Network errors (e.g., failed to fetch)
+      return true;
+    }
+    if (error instanceof Error && 'response' in error) {
+      const status = (error as { response?: { status?: number } }).response?.status;
+      return status === 429 || (status !== undefined && status >= 500 && status < 600);
+    }
+    return false;
+  }
+
+  /**
+   * Send a request and parse the JSON response.
+   * @internal
+   */
   private async json<T>(call: Promise<RequestOpts>): Promise<T> {
-    const response = await this.raw.send(await call);
-    return (await response.json()) as T;
+    const retryConfig = {
+      retries: 3,
+      minTimeout: 1000,
+      maxTimeout: 10000,
+      ...this.config.retry,
+    };
+
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= retryConfig.retries; attempt++) {
+      try {
+        const response = await this.raw.send(await call);
+        if (!response.ok) {
+          const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+          if (!this.isRetryable(error)) {
+            throw error;
+          }
+          lastError = error;
+        } else {
+          return (await response.json()) as T;
+        }
+      } catch (error) {
+        if (!this.isRetryable(error)) {
+          throw error;
+        }
+        lastError = error;
+      }
+
+      if (attempt < retryConfig.retries) {
+        const delay = Math.min(
+          retryConfig.minTimeout * Math.pow(2, attempt),
+          retryConfig.maxTimeout,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError;
   }
 
   // -------------------------------------------------------------------------
