@@ -33,6 +33,7 @@ import type {
   UserPart,
   UserProfile,
   UserSet,
+  UserSetListSet,
   UserToken,
 } from './models';
 import type {
@@ -494,8 +495,8 @@ export class RebrickableClient {
   }
 
   /** Get all sets owned by a user. */
-  async listUserSets(options: ListUserSetsOptions = {}): Promise<Paginated<UserSet>> {
-    return this.json<Paginated<UserSet>>(
+  async listUserSets(options: ListUserSetsOptions = {}): Promise<Paginated<UserSetListSet>> {
+    return this.json<Paginated<UserSetListSet>>(
       this.users.usersSetsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }

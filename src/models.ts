@@ -197,3 +197,11 @@ export interface SetSyncResult {
   synced: UserSet[];
   unchecked: UserSet[];
 }
+
+/** A set in a user's collection, including which set list it belongs to. */
+export interface UserSetListSet {
+  list_id: number;
+  quantity: number;
+  include_spares: boolean;
+  set: SetSummary;
+}
