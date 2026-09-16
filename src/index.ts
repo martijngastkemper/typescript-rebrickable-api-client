@@ -432,8 +432,8 @@ export class RebrickableClient {
   }
 
   /** Get the profile of the current user. */
-  async getProfile(userToken?: string): Promise<UserProfile> {
-    return this.json<UserProfile>(this.users.usersProfileReadRequestOpts({ userToken: this.token(userToken) }));
+  async getProfile(): Promise<UserProfile> {
+    return this.json<UserProfile>(this.users.usersProfileReadRequestOpts({ userToken: this.token() }));
   }
 
   /** Get the badges provided to the current user. */
@@ -447,121 +447,118 @@ export class RebrickableClient {
   }
 
   /** Get all owned parts of a user (across sets and loose parts). */
-  async listAllParts(userToken: string, options: ListAllPartsOptions = {}): Promise<Paginated<UserPart>> {
+  async listAllParts(options: ListAllPartsOptions = {}): Promise<Paginated<UserPart>> {
     return this.json<Paginated<UserPart>>(
-      this.users.usersAllpartsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersAllpartsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Get which parts are still missing / already owned to build a set. */
-  async getSetBuild(userToken: string, setNum: string): Promise<SetBuild> {
-    return this.json<SetBuild>(this.users.usersBuildReadRequestOpts({ userToken: this.token(userToken), setNum }));
+  async getSetBuild(setNum: string): Promise<SetBuild> {
+    return this.json<SetBuild>(this.users.usersBuildReadRequestOpts({ userToken: this.token(), setNum }));
   }
 
   /** Get all loose parts of a user that were marked as lost. */
-  async listLostParts(userToken: string, options: ListLostPartsOptions = {}): Promise<Paginated<UserPart>> {
+  async listLostParts(options: ListLostPartsOptions = {}): Promise<Paginated<UserPart>> {
     return this.json<Paginated<UserPart>>(
-      this.users.usersLostPartsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersLostPartsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Mark an owned part (by its inventory part id) as lost. */
   async addLostPart(
-    userToken: string,
     invPartId: number,
     lostQuantity?: number,
   ): Promise<UserPart> {
-    const params: UsersLostPartsCreateRequest = { userToken: this.token(userToken), invPartId, lostQuantity };
+    const params: UsersLostPartsCreateRequest = { userToken: this.token(), invPartId, lostQuantity };
     return this.json<UserPart>(this.users.usersLostPartsCreateRequestOpts(params));
   }
 
   /** Remove a lost part. */
-  async removeLostPart(userToken: string, id: string | number): Promise<void> {
-    await this.users.usersLostPartsDelete({ userToken: this.token(userToken), id: String(id) });
+  async removeLostPart(id: string | number): Promise<void> {
+    await this.users.usersLostPartsDelete({ userToken: this.token(), id: String(id) });
   }
 
   /** Get all minifigs owned by a user. */
-  async listUserMinifigs(userToken: string, options: ListUserMinifigsOptions = {}): Promise<Paginated<UserMinifig>> {
+  async listUserMinifigs(options: ListUserMinifigsOptions = {}): Promise<Paginated<UserMinifig>> {
     return this.json<Paginated<UserMinifig>>(
-      this.users.usersMinifigsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersMinifigsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Get all parts owned by a user (loose parts). */
-  async listUserParts(userToken: string, options: ListUserPartsOptions = {}): Promise<Paginated<UserPart>> {
+  async listUserParts(options: ListUserPartsOptions = {}): Promise<Paginated<UserPart>> {
     return this.json<Paginated<UserPart>>(
-      this.users.usersPartsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersPartsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Get all sets owned by a user. */
-  async listUserSets(userToken: string, options: ListUserSetsOptions = {}): Promise<Paginated<UserSet>> {
+  async listUserSets(options: ListUserSetsOptions = {}): Promise<Paginated<UserSet>> {
     return this.json<Paginated<UserSet>>(
-      this.users.usersSetsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersSetsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Get a single owned set, including its parts. */
-  async getUserSet(userToken: string, setNum: string): Promise<UserSet> {
-    return this.json<UserSet>(this.users.usersSetsReadRequestOpts({ userToken: this.token(userToken), setNum }));
+  async getUserSet(setNum: string): Promise<UserSet> {
+    return this.json<UserSet>(this.users.usersSetsReadRequestOpts({ userToken: this.token(), setNum }));
   }
 
   /** Add a set to the user's owned sets. */
-  async addUserSet(userToken: string, setNum: string, options: AddUserSetOptions = {}): Promise<UserSet> {
+  async addUserSet(setNum: string, options: AddUserSetOptions = {}): Promise<UserSet> {
     return this.json<UserSet>(
-      this.users.usersSetsCreateRequestOpts({ userToken: this.token(userToken), setNum, ...options }),
+      this.users.usersSetsCreateRequestOpts({ userToken: this.token(), setNum, ...options }),
     );
   }
 
   /** Remove a set from the user's owned sets. */
-  async removeUserSet(userToken: string, setNum: string): Promise<void> {
-    await this.users.usersSetsDelete({ userToken: this.token(userToken), setNum });
+  async removeUserSet(setNum: string): Promise<void> {
+    await this.users.usersSetsDelete({ userToken: this.token(), setNum });
   }
 
   /** Update the quantity of an owned set and optionally include spare parts. */
   async updateUserSet(
-    userToken: string,
     setNum: string,
     options: AddUserSetOptions = {},
   ): Promise<UserSet> {
     return this.json<UserSet>(
-      this.users.usersSetsUpdateRequestOpts({ userToken: this.token(userToken), setNum, ...options }),
+      this.users.usersSetsUpdateRequestOpts({ userToken: this.token(), setNum, ...options }),
     );
   }
 
   /** Replace the contents of a user's owned sets with the given list. */
-  async syncUserSets(userToken: string, setNum: string, options: AddUserSetOptions = {}): Promise<SetSyncResult> {
-    const params: UsersSetsSyncCreateRequest = { userToken: this.token(userToken), setNum, ...options };
+  async syncUserSets(setNum: string, options: AddUserSetOptions = {}): Promise<SetSyncResult> {
+    const params: UsersSetsSyncCreateRequest = { userToken: this.token(), setNum, ...options };
     return this.json<SetSyncResult>(this.users.usersSetsSyncCreateRequestOpts(params));
   }
 
   /** Get all part lists of a user. */
-  async listPartLists(userToken: string, options: ListPartListsOptions = {}): Promise<Paginated<ListResult>> {
+  async listPartLists(options: ListPartListsOptions = {}): Promise<Paginated<ListResult>> {
     return this.json<Paginated<ListResult>>(
-      this.users.usersPartlistsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersPartlistsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Create a part list. */
-  async createPartList(userToken: string, name: string, options: CreatePartListOptions = {}): Promise<ListResult> {
-    const params: UsersPartlistsCreateRequest = { userToken: this.token(userToken), name, ...options };
+  async createPartList(name: string, options: CreatePartListOptions = {}): Promise<ListResult> {
+    const params: UsersPartlistsCreateRequest = { userToken: this.token(), name, ...options };
     return this.json<ListResult>(this.users.usersPartlistsCreateRequestOpts(params));
   }
 
   /** Get a single part list. */
-  async getPartList(userToken: string, listId: string | number): Promise<ListResult> {
-    return this.json<ListResult>(this.users.usersPartlistsReadRequestOpts({ userToken: this.token(userToken), listId: String(listId) }));
+  async getPartList(listId: string | number): Promise<ListResult> {
+    return this.json<ListResult>(this.users.usersPartlistsReadRequestOpts({ userToken: this.token(), listId: String(listId) }));
   }
 
   /** Update a part list. */
   async updatePartList(
-    userToken: string,
     listId: string | number,
     name: string,
     options: UpdatePartListOptions = {},
   ): Promise<ListResult> {
     const params: UsersPartlistsUpdateRequest = {
-      userToken: this.token(userToken),
+      userToken: this.token(),
       listId: String(listId),
       name,
       isBuildable: options.isBuildable,
@@ -571,31 +568,29 @@ export class RebrickableClient {
   }
 
   /** Delete a part list. */
-  async removePartList(userToken: string, listId: string | number): Promise<void> {
-    await this.users.usersPartlistsDelete({ userToken: this.token(userToken), listId: String(listId) });
+  async removePartList(listId: string | number): Promise<void> {
+    await this.users.usersPartlistsDelete({ userToken: this.token(), listId: String(listId) });
   }
 
   /** Get all parts in a part list. */
   async listPartListParts(
-    userToken: string,
     listId: string | number,
     options: ListPartListPartsOptions = {},
   ): Promise<Paginated<UserPart>> {
     return this.json<Paginated<UserPart>>(
-      this.users.usersPartlistsPartsListRequestOpts({ userToken: this.token(userToken), listId: String(listId), ...options }),
+      this.users.usersPartlistsPartsListRequestOpts({ userToken: this.token(), listId: String(listId), ...options }),
     );
   }
 
   /** Add a part/color with a quantity to a part list. */
   async addPartListPart(
-    userToken: string,
     listId: string | number,
     partNum: string,
     colorId: string | number,
     quantity = 1,
   ): Promise<UserPart> {
     const params: UsersPartlistsPartsCreateRequest = {
-      userToken: this.token(userToken),
+      userToken: this.token(),
       listId: String(listId),
       partNum,
       colorId: Number(colorId),
@@ -606,7 +601,6 @@ export class RebrickableClient {
 
   /** Update the quantity of a part in a part list. */
   async updatePartListPart(
-    userToken: string,
     listId: string | number,
     partNum: string,
     colorId: string | number,
@@ -614,7 +608,7 @@ export class RebrickableClient {
   ): Promise<UserPart> {
     return this.json<UserPart>(
       this.users.usersPartlistsPartsUpdateRequestOpts({
-        userToken: this.token(userToken),
+        userToken: this.token(),
         listId: String(listId),
         partNum,
         colorId: String(colorId),
@@ -625,13 +619,12 @@ export class RebrickableClient {
 
   /** Remove a part from a part list. */
   async removePartListPart(
-    userToken: string,
     listId: string | number,
     partNum: string,
     colorId: string | number,
   ): Promise<void> {
     await this.users.usersPartlistsPartsDelete({
-      userToken: this.token(userToken),
+      userToken: this.token(),
       listId: String(listId),
       partNum,
       colorId: String(colorId),
@@ -639,32 +632,31 @@ export class RebrickableClient {
   }
 
   /** Get all set lists of a user. */
-  async listSetLists(userToken: string, options: ListSetListsOptions = {}): Promise<Paginated<ListResult>> {
+  async listSetLists(options: ListSetListsOptions = {}): Promise<Paginated<ListResult>> {
     return this.json<Paginated<ListResult>>(
-      this.users.usersSetlistsListRequestOpts({ userToken: this.token(userToken), ...options }),
+      this.users.usersSetlistsListRequestOpts({ userToken: this.token(), ...options }),
     );
   }
 
   /** Create a set list. */
-  async createSetList(userToken: string, name: string, options: CreateSetListOptions = {}): Promise<ListResult> {
-    const params: UsersSetlistsCreateRequest = { userToken: this.token(userToken), name, ...options };
+  async createSetList(name: string, options: CreateSetListOptions = {}): Promise<ListResult> {
+    const params: UsersSetlistsCreateRequest = { userToken: this.token(), name, ...options };
     return this.json<ListResult>(this.users.usersSetlistsCreateRequestOpts(params));
   }
 
   /** Get a single set list. */
-  async getSetList(userToken: string, listId: string | number): Promise<ListResult> {
-    return this.json<ListResult>(this.users.usersSetlistsReadRequestOpts({ userToken: this.token(userToken), listId: String(listId) }));
+  async getSetList(listId: string | number): Promise<ListResult> {
+    return this.json<ListResult>(this.users.usersSetlistsReadRequestOpts({ userToken: this.token(), listId: String(listId) }));
   }
 
   /** Update a set list. */
   async updateSetList(
-    userToken: string,
     listId: string | number,
     name: string,
     options: UpdateSetListOptions = {},
   ): Promise<ListResult> {
     const params: UsersSetlistsUpdateRequest = {
-      userToken: this.token(userToken),
+      userToken: this.token(),
       listId: String(listId),
       name,
       isBuildable: options.isBuildable,
@@ -674,30 +666,28 @@ export class RebrickableClient {
   }
 
   /** Delete a set list. */
-  async removeSetList(userToken: string, listId: string | number): Promise<void> {
-    await this.users.usersSetlistsDelete({ userToken: this.token(userToken), listId: String(listId) });
+  async removeSetList(listId: string | number): Promise<void> {
+    await this.users.usersSetlistsDelete({ userToken: this.token(), listId: String(listId) });
   }
 
   /** Get all sets in a set list. */
   async listSetListSets(
-    userToken: string,
     listId: string | number,
     options: ListSetListSetsOptions = {},
   ): Promise<Paginated<UserSet>> {
     return this.json<Paginated<UserSet>>(
-      this.users.usersSetlistsSetsListRequestOpts({ userToken: this.token(userToken), listId: String(listId), ...options }),
+      this.users.usersSetlistsSetsListRequestOpts({ userToken: this.token(), listId: String(listId), ...options }),
     );
   }
 
   /** Add a set to a set list. */
   async addSetListSet(
-    userToken: string,
     listId: string | number,
     setNum: string,
     options: CreateSetListSetOptions = {},
   ): Promise<UserSet> {
     const params: UsersSetlistsSetsCreateRequest = {
-      userToken: this.token(userToken),
+      userToken: this.token(),
       listId: String(listId),
       setNum,
       ...options,
@@ -707,14 +697,13 @@ export class RebrickableClient {
 
   /** Update the quantity (and spare parts) of a set in a set list. */
   async updateSetListSet(
-    userToken: string,
     listId: string | number,
     setNum: string,
     options: UpdateSetListSetOptions = {},
   ): Promise<UserSet> {
     return this.json<UserSet>(
       this.users.usersSetlistsSetsUpdateRequestOpts({
-        userToken: this.token(userToken),
+        userToken: this.token(),
         listId: String(listId),
         setNum,
         ...options,
@@ -723,9 +712,9 @@ export class RebrickableClient {
   }
 
   /** Remove a set from a set list. */
-  async removeSetListSet(userToken: string, listId: string | number, setNum: string): Promise<void> {
+  async removeSetListSet(listId: string | number, setNum: string): Promise<void> {
     await this.users.usersSetlistsSetsDelete({
-      userToken: this.token(userToken),
+      userToken: this.token(),
       listId: String(listId),
       setNum,
     });

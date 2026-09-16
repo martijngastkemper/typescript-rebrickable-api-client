@@ -22,8 +22,7 @@ const owned = await client.listUserSets();
 ```
 
 The `user_token` can also be provided up front via the `userToken` config option
-(`new RebrickableClient({ apiKey, userToken })`) or per call as the first argument
-(`client.listUserSets('my_token')`).
+(`new RebrickableClient({ apiKey, userToken })`).
 
 ### Retry Policy
 
