@@ -1,6 +1,6 @@
 {
   "name": "rebrickable-api-client",
-  "version": "0.3.3",
+  "version": "0.4.1",
   "description": "TypeScript client for the Rebrickable LEGO API v3, generated with openapi-generator from the official OpenAPI spec.",
   "repository": {
     "url": "https://github.com/martijngastkemper/typescript-rebrickable-api-client"
