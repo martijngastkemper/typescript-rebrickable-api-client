@@ -272,7 +272,16 @@ export class RebrickableClient {
       try {
         const response = await this.raw.send(await call);
         if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          try {
+            const errorBody = await response.clone().json();
+            if (errorBody && typeof errorBody === 'object' && 'detail' in errorBody) {
+              errorMessage += ` - ${(errorBody as { detail?: string }).detail}`;
+            }
+          } catch {
+            // Ignore errors when parsing the response body
+          }
+          const error = new Error(errorMessage);
           if (!this.isRetryable(error)) {
             throw error;
           }
