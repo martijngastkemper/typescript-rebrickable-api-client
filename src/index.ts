@@ -289,11 +289,29 @@ export class RebrickableClient {
         } else {
           return (await response.json()) as T;
         }
-      } catch (error) {
-        if (!this.isRetryable(error)) {
+      } catch (error: any) {
+        // Improve error message for ResponseError from generated API code
+        if (error.name === 'ResponseError' && error.response) {
+          const response = error.response;
+          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          try {
+            const errorBody = await response.clone().json();
+            if (errorBody && typeof errorBody === 'object' && 'detail' in errorBody) {
+              errorMessage += ` - ${errorBody.detail}`;
+            }
+          } catch {
+            // Ignore errors when parsing the response body
+          }
+          const improvedError = new Error(errorMessage);
+          if (!this.isRetryable(improvedError)) {
+            throw improvedError;
+          }
+          lastError = improvedError;
+        } else if (!this.isRetryable(error)) {
           throw error;
+        } else {
+          lastError = error;
         }
-        lastError = error;
       }
 
       if (attempt < retryConfig.retries) {
