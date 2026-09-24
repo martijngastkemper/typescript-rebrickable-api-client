@@ -303,7 +303,9 @@ export class RebrickableClient {
             // Ignore errors when parsing the response body
           }
           const improvedError = new Error(errorMessage);
-          if (!this.isRetryable(improvedError)) {
+          // Check retryability against the original ResponseError: the improved
+          // error is a plain Error and no longer carries the response status.
+          if (!this.isRetryable(error)) {
             throw improvedError;
           }
           lastError = improvedError;

@@ -95,23 +95,27 @@ test('retries failed requests (5xx) and succeeds on retry', async () => {
     });
   };
 
-  const client = new RebrickableClient({ apiKey: 'x', fetchApi });
+  const client = new RebrickableClient({ apiKey: 'x', fetchApi, retry: { minTimeout: 1 } });
   const colors = await client.listColors();
   assert.equal(colors.results[0].name, 'Red');
   assert.equal(callCount, 2);
 });
 
 test('does not retry non-retryable errors (404)', async () => {
-  const fetchApi = async () =>
-    new Response('Not Found', { status: 404 });
+  let callCount = 0;
+  const fetchApi = async () => {
+    callCount++;
+    return new Response('Not Found', { status: 404 });
+  };
 
   const client = new RebrickableClient({ apiKey: 'x', fetchApi });
-  await assert.rejects(client.listColors(), /Response returned an error code/);
+  await assert.rejects(client.listColors(), /HTTP 404/);
+  assert.equal(callCount, 1);
 });
 
 test('throws on non-2xx responses', async () => {
   const { fetchApi } = mockFetch(404, JSON.stringify({ detail: 'Not found.' }));
   const client = new RebrickableClient({ apiKey: 'x', fetchApi });
 
-  await assert.rejects(() => client.getSet('75159-1'), /Response returned an error code/);
+  await assert.rejects(() => client.getSet('75159-1'), /HTTP 404:.*Not found\./);
 });
