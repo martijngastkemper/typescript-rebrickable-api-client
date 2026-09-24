@@ -610,6 +610,22 @@ export class RebrickableClient {
     );
   }
 
+  /** Get a single part/color entry in a part list. */
+  async getPartListPart(
+    listId: string | number,
+    partNum: string,
+    colorId: string | number,
+  ): Promise<UserPart> {
+    return this.json<UserPart>(
+      this.users.usersPartlistsPartsReadRequestOpts({
+        userToken: this.token(),
+        listId: String(listId),
+        partNum,
+        colorId: String(colorId),
+      }),
+    );
+  }
+
   /** Add a part/color with a quantity to a part list. */
   async addPartListPart(
     listId: string | number,
