@@ -272,7 +272,7 @@ export class RebrickableClient {
       try {
         const response = await this.raw.send(await call);
         if (!response.ok) {
-          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          let errorMessage = `Rebrickable API request failed\nHTTP ${response.status}: ${response.statusText}`;
           try {
             const errorBody = await response.clone().json();
             if (errorBody && typeof errorBody === 'object' && 'detail' in errorBody) {
@@ -293,7 +293,7 @@ export class RebrickableClient {
         // Improve error message for ResponseError from generated API code
         if (error.name === 'ResponseError' && error.response) {
           const response = error.response;
-          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          let errorMessage = `Rebrickable API request failed\nHTTP ${response.status}: ${response.statusText}`;
           try {
             const errorBody = await response.clone().json();
             if (errorBody && typeof errorBody === 'object' && 'detail' in errorBody) {
@@ -310,6 +310,13 @@ export class RebrickableClient {
           }
           lastError = improvedError;
         } else if (!this.isRetryable(error)) {
+          // Improve generic Axios errors
+          if (error.isAxiosError) {
+            const method = error.config?.method?.toUpperCase() || 'UNKNOWN';
+            const url = error.config?.url || 'UNKNOWN';
+            const errorMessage = `Rebrickable API request failed: ${method} ${url}\nHTTP ${error.response?.status}: ${error.response?.statusText || error.message}`;
+            throw new Error(errorMessage);
+          }
           throw error;
         } else {
           lastError = error;
